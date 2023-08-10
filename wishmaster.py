@@ -130,27 +130,40 @@ WISHES = {
     exit_handler: ["good bye", "close", "exit", "leave", "bye"],
     }
 
+# Декоратор до функції завантаження контактів з існуючого файлу
+def contacts_loader_decorator(contacts_loader):
+    def inner(*args, **kwargs):
+        try:
+            return contacts_loader(*args)
+        except FileNotFoundError:
+            print("Appologies, Master. The Book of The Damned does not exist yet.\nI'm already starting to write the new one.\n")
+    return inner
+
 
 # Функція, відповідальна за підвантаження контактів з існуючої бази (на початку сессії бота)
+@contacts_loader_decorator
 def contacts_loader(*args):
-    try:
-        with open("The_Book_of_The_Damned.txt", "r") as book:
-            global the_Book_of_the_Damned
-            the_Book_of_the_Damned = eval(book.read())
-            print("The Book of The Damned is in my memory now.")
-    except FileNotFoundError:
-        print("Appologies, Master. The Book of The Damned does not exist yet.\nI'm already starting to write the new one.\n")
+    with open("The_Book_of_The_Damned.txt", "r") as book:
+        global the_Book_of_the_Damned
+        the_Book_of_the_Damned = eval(book.read())
+        print("The Book of The Damned is in my memory now.")
 
+# Декоратор до функції зберігання контактів у файл
+def contacts_saver_decorator(contacts_saver):
+    def inner(*args, **kwargs):
+        try:
+            contacts_saver(*args)
+        except FileNotFoundError:
+            existing_dict = {}
+    return inner
 
 # Функція, відповідальна за збереження змін в телефонній книзі і записання їх у .txt файл
+@contacts_saver_decorator
 def contacts_saver(contact_book: dict):
-    try:
-        with open("The_Book_of_The_Damned.txt", "r") as book:
-            existing_data = book.read()
-            existing_dict = eval(existing_data)
-    except FileNotFoundError:
-            existing_dict = {}
-    
+    with open("The_Book_of_The_Damned.txt", "r") as book:
+        existing_data = book.read()
+        existing_dict = eval(existing_data)
+        
     existing_dict.update(contact_book)
 
     with open("The_Book_of_The_Damned.txt", "w") as book:
@@ -165,7 +178,7 @@ def jinn():
     greeting_message = "-------------------\nMaster, give me the Name and Number,\nand I'll carve them into the Annals of Eternity!\nI can also modify your contact list, show it to you instantly\nand show only the number of your contact.\n"
     print(greeting_message)
 
-    start_input = input("Would you like to behold the existent The Book of the Damned?\n")
+    start_input = input("Would you like to behold the existent The Book of the Damned? Y or N\n")
     if start_input.startswith("Y") or start_input.startswith("y"):
         contacts_loader()
 
@@ -175,7 +188,7 @@ def jinn():
         result = command_parser(user_input.lower())
         print(result)
         if result == "Summon me whenever you require my assistance, Master":
-            end_input = input("Would you like me to save the information for later?\n")
+            end_input = input("Would you like me to save the information for later? Y or N:\n")
             if end_input.startswith("Y") or end_input.startswith("y"):
                 contacts_saver(the_Book_of_the_Damned)
             break
